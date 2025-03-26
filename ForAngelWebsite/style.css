@@ -1,0 +1,304 @@
+/* --- Reset & Basic Setup --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth; /* Mengaktifkan smooth scroll bawaan */
+}
+
+body {
+    font-family: 'Lato', sans-serif; /* Font dasar yang bersih */
+    line-height: 1.7;
+    color: #e0e0e0; /* Warna teks utama (abu-abu terang) */
+    background-color: #1a1a1a; /* Warna latar belakang dasar jika gambar gagal load */
+    overflow-x: hidden; /* Mencegah scroll horizontal */
+    position: relative; /* Dibutuhkan untuk elemen absolute/fixed di dalamnya */
+}
+
+/* --- Background & Overlay --- */
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    /* Ganti dengan path gambar latar belakangmu */
+    background: url('assets/images/angel_bg.jpg') no-repeat center center/cover;
+    filter: blur(8px) brightness(0.4); /* Efek blur dan redup */
+    z-index: -2; /* Pastikan di belakang konten */
+    transform: scale(1.1); /* Sedikit zoom untuk blur yang lebih halus di tepi */
+}
+
+/* --- Particle Container (Dasar) --- */
+#particle-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none; /* Agar tidak mengganggu klik */
+    /* Styling partikel (akan lebih kompleks dengan JS atau CSS Animasi) */
+}
+
+/* --- Kontrol Musik --- */
+.music-control {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease, transform 0.3s ease;
+    backdrop-filter: blur(5px); /* Efek glassmorphism sedikit */
+}
+
+.music-control:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.music-control svg {
+    width: 20px;
+    height: 20px;
+    fill: #e0e0e0;
+}
+
+/* --- Header & Navigasi --- */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 50px;
+    background: rgba(0, 0, 0, 0.3); /* Latar belakang semi-transparan */
+    backdrop-filter: blur(10px); /* Efek glassmorphism */
+    z-index: 100;
+    transition: background 0.3s ease;
+}
+
+nav ul.menu {
+    list-style: none;
+    display: flex;
+    justify-content: center; /* Atau flex-end untuk rata kanan */
+    gap: 30px;
+}
+
+nav ul.menu li a {
+    font-family: 'Playfair Display', serif; /* Font elegan untuk menu */
+    color: #e0e0e0;
+    text-decoration: none;
+    font-size: 1.1em;
+    padding-bottom: 5px;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+nav ul.menu li a::after { /* Efek garis bawah saat hover */
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: #f0a5a5; /* Warna pink lembut untuk hover */
+    transition: width 0.4s ease;
+}
+
+nav ul.menu li a:hover {
+    color: #f7c8c8; /* Warna teks saat hover */
+}
+
+nav ul.menu li a:hover::after {
+    width: 100%;
+}
+
+/* --- Bagian Konten Umum --- */
+.fullscreen-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative; /* Dibutuhkan untuk positioning absolut di dalamnya */
+    padding: 0 20px;
+}
+
+.content-section {
+    padding: 100px 15%; /* Padding atas/bawah dan kiri/kanan */
+    position: relative;
+    background: rgba(10, 10, 10, 0.6); /* Latar belakang bagian konten agar teks lebih terbaca */
+    margin-bottom: 50px; /* Jarak antar section */
+    backdrop-filter: blur(3px); /* Blur sedikit untuk background section */
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2); /* Shadow halus */
+}
+
+.content-center {
+    max-width: 800px;
+}
+
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8em;
+    margin-bottom: 40px;
+    color: #f5c4c4; /* Warna judul section */
+    text-align: center;
+}
+
+/* --- Efek Spesifik Halaman Home --- */
+#home {
+    background: transparent; /* Biarkan background utama terlihat */
+}
+
+.main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 4em; /* Sesuaikan ukuran */
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #fff;
+    display: inline-block; /* Agar underline pas dengan teks */
+    position: relative; /* Untuk pseudo-element underline */
+}
+
+.subtitle {
+    font-size: 1.5em;
+    font-style: italic;
+    color: #d0d0d0;
+}
+
+/* --- Glowing Underline --- */
+.glowing-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -5px; /* Jarak garis dari teks */
+    height: 2px;
+    width: 100%;
+    background-color: #f0a5a5; /* Warna dasar garis */
+    box-shadow: 0 0 10px #f0a5a5, /* Efek glow */
+                0 0 20px #f0a5a5;
+    animation: pulse-glow 2s infinite alternate; /* Animasi glow pulsasi */
+}
+
+@keyframes pulse-glow {
+    from { box-shadow: 0 0 8px #f0a5a5, 0 0 16px #f0a5a5; }
+    to { box-shadow: 0 0 15px #f0a5a5, 0 0 30px #f0a5a5; }
+}
+
+/* --- Efek Fade-In (Dasar) --- */
+.fade-in-element {
+    opacity: 0;
+    animation: fadeIn 2s ease-out 0.5s forwards; /* Durasi 2s, delay 0.5s */
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* --- Efek Reveal on Scroll (Dasar) --- */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px); /* Mulai dari sedikit bawah */
+    transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- Styling Parallax Section (About) --- */
+#about p {
+    margin-bottom: 25px;
+    font-size: 1.1em;
+    max-width: 700px; /* Batasi lebar teks */
+    margin-left: auto;
+    margin-right: auto; /* Pusatkan teks */
+    text-align: justify; /* Ratakan kiri-kanan jika diinginkan */
+}
+
+/* --- Styling Digital Letter (Messages) --- */
+.digital-letter {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 40px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 700px;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(0,0,0, 0.3);
+}
+
+#handwriting-text {
+    font-family: 'Playfair Display', serif; /* Atau font handwriting jika ada */
+    font-style: italic; /* Beri kesan personal */
+    font-size: 1.2em;
+    line-height: 1.8;
+    color: #f0f0f0;
+    white-space: pre-wrap; /* Pertahankan line breaks dari HTML */
+    /* Animasi handwriting akan diatur JS, ini hanya style dasar */
+    opacity: 1; /* Default terlihat, JS akan mengatur animasi */
+}
+
+/* --- Footer --- */
+footer {
+    text-align: center;
+    padding: 50px 20px;
+    background: rgba(0, 0, 0, 0.5); /* Sedikit beda dari section */
+    margin-top: 50px;
+}
+
+.quote {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.3em;
+    margin-bottom: 15px;
+    color: #c7c7c7;
+}
+
+.credit {
+    font-size: 0.9em;
+    color: #888;
+}
+
+/* --- Responsiveness (Contoh Sederhana) --- */
+@media (max-width: 768px) {
+    header {
+        padding: 15px 20px;
+    }
+    nav ul.menu {
+        gap: 20px;
+    }
+    nav ul.menu li a {
+        font-size: 1em;
+    }
+    .main-title {
+        font-size: 2.8em;
+    }
+    .subtitle {
+        font-size: 1.2em;
+    }
+    .content-section {
+        padding: 80px 10%;
+    }
+    .section-title {
+        font-size: 2.2em;
+    }
+    .digital-letter {
+        padding: 30px;
+    }
+    #handwriting-text {
+        font-size: 1.1em;
+    }
+}
