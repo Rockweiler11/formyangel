@@ -72,6 +72,9 @@ body {
     width: 20px;
     height: 20px;
     fill: #e0e0e0;
+    display: block;  /* PENTING: Mencegah ruang ekstra inline */
+    margin: auto;    /* PENTING: Memusatkan SVG di flex item (jika perlu) */
+    flex-shrink: 0; /* Mencegah SVG menyusut jika ruang sempit */
 }
 
 /* --- Header & Navigasi --- */
