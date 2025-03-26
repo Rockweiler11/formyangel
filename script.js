@@ -1,238 +1,226 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // --- Elemen Utama ---
     const backgroundMusic = document.getElementById('background-music');
     const playPauseBtn = document.getElementById('play-pause-btn');
-    const playIcon = `<svg viewBox="0 0 60 60"><polygon points="0,0 0,60 60,30" /></svg>`;
-    const pauseIcon = `<svg viewBox="0 0 60 60"><rect x="0" y="0" width="15" height="60"/><rect x="25" y="0" width="15" height="60"/></svg>`;
-    let musicPlayedOnce = false; // Flag untuk autoplay
+    const handwritingElement = document.getElementById('handwriting-text');
 
-    // Fungsi untuk memainkan musik (menangani promise & autoplay restriction)
-    function playMusic() {
-        backgroundMusic.play().then(() => {
-            playPauseBtn.innerHTML = pauseIcon;
-            musicPlayedOnce = true;
-        }).catch(error => {
-            console.log("Autoplay mungkin diblokir:", error);
-            // Jika autoplay gagal, biarkan tombol play & jangan set flag
-            playPauseBtn.innerHTML = playIcon;
-        });
-    }
+    // --- Ikon Tombol Musik (SVG sebagai string) ---
+    const playIconSVG = `<svg viewBox="0 0 60 60" class="music-icon"><polygon points="0,0 0,60 60,30" /></svg>`;
+    const pauseIconSVG = `<svg viewBox="0 0 60 60" class="music-icon"><rect x="5" y="0" width="15" height="60"/><rect x="35" y="0" width="15" height="60"/></svg>`; // Sedikit penyesuaian posisi ikon pause
 
-    // Coba autoplay saat halaman load
-    // Browser modern mungkin memblokir ini sampai ada interaksi user
-    // Kita akan coba mainkan saat user scroll atau klik pertama kali
-    // playMusic(); // Komentari dulu autoplay langsung
+    // --- Status Musik ---
+    let musicPlaybackAllowed = false; // Apakah browser mengizinkan pemutaran?
+    let userInteracted = false;      // Apakah pengguna sudah berinteraksi?
 
-    // Kontrol Tombol Play/Pause
-    playPauseBtn.addEventListener('click', () => {
+    // -------------------------------------------------------------
+    // Fungsi Update Tampilan Tombol Play/Pause
+    // -------------------------------------------------------------
+    function updatePlayButtonIcon() {
+        if (!backgroundMusic) return; // Exit jika elemen tidak ditemukan
+
         if (backgroundMusic.paused) {
-            playMusic();
+            playPauseBtn.innerHTML = playIconSVG;
         } else {
-            backgroundMusic.pause();
-            playPauseBtn.innerHTML = playIcon;
-        }
-    });
-
-    // Coba mainkan musik saat user berinteraksi pertama kali (scroll/klik)
-    function attemptPlayOnInteraction() {
-        if (!musicPlayedOnce && backgroundMusic.paused) {
-             playMusic();
-             // Hapus listener ini setelah berhasil play atau dicoba
-             document.removeEventListener('scroll', attemptPlayOnInteraction);
-             document.removeEventListener('click', attemptPlayOnInteraction);
+            playPauseBtn.innerHTML = pauseIconSVG;
         }
     }
-    document.addEventListener('scroll', attemptPlayOnInteraction, { once: true }); // Coba play saat scroll pertama
-    document.addEventListener('click', attemptPlayOnInteraction, { once: true }); // Coba play saat klik pertama
 
-    // Smooth Scroll untuk Link Navigasi (Jika CSS 'scroll-behavior' tidak cukup)
+    // -------------------------------------------------------------
+    // Fungsi Mencoba Memutar Musik (Handle Autoplay & Interaksi)
+    // -------------------------------------------------------------
+    function attemptPlayMusic() {
+        if (!backgroundMusic || !backgroundMusic.paused) return; // Exit jika elemen tdk ada atau sudah bermain
+
+        // Hanya coba play jika diizinkan ATAU pengguna sudah berinteraksi
+        if (musicPlaybackAllowed || userInteracted) {
+            backgroundMusic.play().then(() => {
+                console.log("Pemutaran musik berhasil dimulai.");
+                musicPlaybackAllowed = true; // Tandai bahwa pemutaran kini diizinkan
+                updatePlayButtonIcon();
+            }).catch(error => {
+                console.warn("Pemutaran musik gagal:", error.message);
+                musicPlaybackAllowed = false; // Playback tidak diizinkan (kemungkinan autoplay diblokir)
+                updatePlayButtonIcon(); // Pastikan ikon play ditampilkan jika gagal
+            });
+        } else {
+             console.log("Menunggu interaksi pengguna untuk memutar musik...");
+             updatePlayButtonIcon(); // Pastikan ikon play tampil saat menunggu
+        }
+    }
+
+    // -------------------------------------------------------------
+    // Setup Awal Musik & Tombol
+    // -------------------------------------------------------------
+    if (backgroundMusic && playPauseBtn) {
+        // 1. Set ikon awal berdasarkan status pause (jika halaman di-refresh)
+        updatePlayButtonIcon();
+
+        // 2. Coba Autoplay (mungkin gagal)
+        // Set 'muted' dulu agar kemungkinan autoplay lebih besar, lalu unmute
+        backgroundMusic.muted = true;
+        backgroundMusic.play().then(() => {
+            // Jika 'muted autoplay' berhasil, tandai playback boleh
+            musicPlaybackAllowed = true;
+            console.log("Autoplay (muted) berhasil, mencoba unmute...");
+            backgroundMusic.pause(); // Jeda sebentar
+            backgroundMusic.muted = false;
+             // Coba play lagi tanpa muted (mungkin gagal lagi tergantung interaksi)
+             if (userInteracted) { // Jika user sudah keburu interaksi sebelum ini selesai
+                 attemptPlayMusic();
+             } else {
+                 // Tunda sebentar sebelum attempt play agar browser 'relax'
+                 setTimeout(attemptPlayMusic, 100);
+             }
+        }).catch(error => {
+            // Jika 'muted autoplay' pun gagal, izin tetap false
+            console.warn("Autoplay (muted) juga gagal:", error.message);
+            musicPlaybackAllowed = false;
+            backgroundMusic.muted = false; // Pastikan unmute
+            updatePlayButtonIcon();
+        });
+
+        // 3. Event Listener untuk Tombol Play/Pause Manual
+        playPauseBtn.addEventListener('click', () => {
+             userInteracted = true; // Klik tombol adalah interaksi
+            if (backgroundMusic.paused) {
+                attemptPlayMusic(); // Coba mainkan
+            } else {
+                backgroundMusic.pause();
+                updatePlayButtonIcon();
+            }
+        });
+
+        // 4. Event listener untuk mendeteksi interaksi pengguna PERTAMA kali
+        const interactionHandler = () => {
+            if (!userInteracted) {
+                 console.log("Interaksi pengguna terdeteksi.");
+                userInteracted = true;
+                // Coba mainkan musik setelah interaksi pertama, HANYA jika sedang pause
+                if (backgroundMusic.paused) {
+                    attemptPlayMusic();
+                }
+                // Hapus listener interaksi setelah dijalankan sekali
+                 document.removeEventListener('click', interactionHandler, { capture: true });
+                 document.removeEventListener('scroll', interactionHandler, { capture: true });
+                 document.removeEventListener('keydown', interactionHandler, { capture: true });
+            }
+        };
+
+        document.addEventListener('click', interactionHandler, { capture: true, once: true });
+        document.addEventListener('scroll', interactionHandler, { capture: true, once: true });
+        document.addEventListener('keydown', interactionHandler, { capture: true, once: true }); // Tambah keydown sbg interaksi
+
+    } else {
+        console.error("Elemen audio (#background-music) atau tombol (#play-pause-btn) tidak ditemukan.");
+    }
+
+    // -------------------------------------------------------------
+    // Smooth Scroll untuk Link Navigasi
+    // -------------------------------------------------------------
     const navLinks = document.querySelectorAll('nav a[href^="#"]');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            let targetId = this.getAttribute('href');
-            let targetElement = document.querySelector(targetId);
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
             if (targetElement) {
                 targetElement.scrollIntoView({
                     behavior: 'smooth',
-                    block: 'start' // Scroll ke bagian atas elemen
+                    block: 'start'
                 });
             }
         });
     });
 
-    // Intersection Observer untuk Efek Reveal on Scroll & Parallax Sederhana
-    const observerOptions = {
-        root: null, // relative to viewport
-        rootMargin: '0px',
-        threshold: 0.1 // Trigger saat 10% elemen terlihat
-    };
+    // -------------------------------------------------------------
+    // Intersection Observer untuk Efek Reveal on Scroll
+    // (MENYEDERHANAKAN logika teks surat)
+    // -------------------------------------------------------------
+    const revealElements = document.querySelectorAll('.reveal-on-scroll');
 
-    const observerCallback = (entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
+    if (revealElements.length > 0) {
+        const observerOptions = {
+            root: null, // viewport
+            rootMargin: '0px',
+            threshold: 0.1 // Trigger saat 10% terlihat
+        };
 
-                // (Opsional) Efek Parallax Sederhana: Gerakkan sedikit saat muncul
-                // Ini bisa diperluas atau diganti dengan library parallax
-                if (entry.target.closest('.parallax-section')) {
-                     // Tambahkan gaya parallax sederhana di sini jika mau
-                     // Contoh: entry.target.style.transform = `translateY(calc(-${entry.intersectionRatio * 10}px))`;
-                     // Atau, biarkan CSS .is-visible yang mengaturnya
+        const observerCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                     // PENTING: Jika elemen adalah container surat, biarkan CSS menghandle fade-in teksnya.
+                     // Kita tidak perlu lagi mengosongkan dan mengisi ulang via JS di sini,
+                     // kecuali jika Anda MENGGUNAKAN library handwriting seperti Typed.js.
+
+                     // Opsional: Hanya amati sekali jika tidak perlu animasi keluar-masuk
+                     // observer.unobserve(entry.target);
+                } else {
+                     // Jika ingin elemen hilang saat keluar viewport
+                    entry.target.classList.remove('is-visible');
                 }
+            });
+        };
 
-                 // (Opsional) Hentikan observasi setelah elemen terlihat jika tidak perlu di-reset
-                 // observer.unobserve(entry.target);
-
-            } else {
-                // (Opsional) Sembunyikan kembali elemen saat scroll keluar viewport
-                 entry.target.classList.remove('is-visible');
-            }
+        const revealObserver = new IntersectionObserver(observerCallback, observerOptions);
+        revealElements.forEach(el => {
+            revealObserver.observe(el);
         });
-    };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    } else {
+         console.warn("Tidak ada elemen '.reveal-on-scroll' yang ditemukan untuk diamati.");
+    }
 
-    // Amati semua elemen yang butuh efek reveal
-    const elementsToReveal = document.querySelectorAll('.reveal-on-scroll');
-    elementsToReveal.forEach(el => {
-        observer.observe(el);
-    });
-
-    // Placeholder untuk Animasi Handwriting (Membutuhkan Library seperti Typed.js atau implementasi custom)
-    const handwritingElement = document.getElementById('handwriting-text');
-    if (handwritingElement) {
-        const originalText = handwritingElement.innerHTML; // Simpan teks asli (termasuk <br>)
-        handwritingElement.innerHTML = ''; // Kosongkan dulu
-        handwritingElement.style.opacity = '1'; // Pastikan terlihat
-
-        // ---- OPSI 1: Menggunakan Library (Contoh dengan Typed.js - PERLU di-include di HTML) ----
-        /*
-        Jika kamu menyertakan Typed.js:
-        <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
-
-        Lalu aktifkan kode di bawah ini:
-        */
-        /*
-        if (typeof Typed !== 'undefined') {
-             // Amati elemen surat menggunakan Intersection Observer
-             const letterObserver = new IntersectionObserver((entries) => {
-                 entries.forEach(entry => {
-                     if (entry.isIntersecting) {
-                         // Hanya jalankan Typed.js sekali saat elemen pertama kali terlihat
-                         if (!entry.target.hasAttribute('data-typed-initiated')) {
-                             new Typed('#handwriting-text', {
-                                 strings: [originalText.replace(/<br\s*\/?>/ig, '\n')], // Ganti <br> dengan newline untuk Typed.js
-                                 typeSpeed: 40, // Kecepatan ketik (ms)
-                                 showCursor: true,
-                                 cursorChar: '_',
-                                 startDelay: 500, // Mulai setelah sedikit delay
-                                 contentType: 'html', // Gunakan 'html' jika teks mengandung HTML
-                                 autoInsertCss: true, // Typed.js akan menambahkan CSS kursor
-                                 onComplete: (self) => {
-                                     self.cursor.remove(); // Hapus kursor setelah selesai
-                                 }
-                             });
-                             entry.target.setAttribute('data-typed-initiated', 'true'); // Tandai sudah dijalankan
-                         }
-                        // Hapus observasi setelah animasi dimulai
-                        letterObserver.unobserve(entry.target);
-                    }
-                 });
-             }, { threshold: 0.5 }); // Mulai animasi saat 50% terlihat
-
-             letterObserver.observe(handwritingElement);
-
-        } else {
-            console.warn("Typed.js tidak ditemukan. Memuat teks secara langsung.");
-            handwritingElement.innerHTML = originalText; // Tampilkan teks biasa jika library tidak ada
-        }
-        */
-
-         // ---- OPSI 2: Animasi Fade-in Sederhana (Jika tidak pakai library) ----
-         // Biarkan Observer di atas (yang menambah class .is-visible) menangani fade-in dasar.
-         // Anda mungkin perlu menambahkan transisi opacity pada #handwriting-text di CSS.
-          handwritingElement.innerHTML = originalText; // Langsung isi teksnya
-          // Pastikan class 'reveal-on-scroll' sudah ada di elemen .digital-letter
-          // Jika ingin animasi muncul kata per kata tanpa library, itu butuh JS yg lebih kompleks.
-
-        // OPSI 3 (IMPLEMENTASI TANPA LIBRARY) : Mengisi teks asli saat elemen terlihat
-        const letterObserver = new IntersectionObserver((entries) => {
-             entries.forEach(entry => {
-                 if (entry.isIntersecting) {
-                     if (!entry.target.hasAttribute('data-text-loaded')) {
-                          handwritingElement.innerHTML = originalText; // Isi teks asli
-                          entry.target.setAttribute('data-text-loaded', 'true'); // Tandai sudah diisi
-                     }
-                     // Hapus observasi setelah teks diisi agar tidak berulang
-                     // letterObserver.unobserve(entry.target); // Anda bisa hapus observasi jika animasi tidak perlu diulang
-                 } else {
-                     // Kosongkan kembali jika keluar viewport (opsional, tergantung efek yg diinginkan)
-                     // handwritingElement.innerHTML = '';
-                     // entry.target.removeAttribute('data-text-loaded');
-                 }
-             });
-         }, { threshold: 0.3 }); // Munculkan saat 30% bagian surat terlihat
-
-         letterObserver.observe(document.querySelector('.digital-letter')); // Amati container suratnya
-
-
-    } // Akhir dari if(handwritingElement)
-
-
-    // Placeholder untuk Partikel Mengambang (Membutuhkan Library seperti particles.js/tsParticles atau CSS rumit)
-
-    // ---- Contoh dengan tsParticles (PERLU di-include di HTML) ----
+    // --- (Tambahan untuk memastikan Teks Surat Tampil) ---
+    // Jika TIDAK menggunakan Typed.js atau library animasi teks,
+    // Pastikan elemen teks (#handwriting-text) sudah berisi teks di HTML
+    // dan CSS menghandlenya seperti ini:
     /*
-    Jika kamu menyertakan tsParticles:
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@latest/tsparticles.bundle.min.js"></script>
-
-    Lalu aktifkan kode di bawah ini dan sesuaikan konfigurasinya:
+       .digital-letter .reveal-on-scroll { // Asumsi container surat punya kelas ini
+           opacity: 0; // Awalnya transparan
+           transition: opacity 1.5s ease-out; // Transisi saat muncul
+       }
+       .digital-letter .reveal-on-scroll.is-visible {
+           opacity: 1; // Jadi terlihat saat container visible
+       }
+       #handwriting-text {
+            opacity: 0; // Awalnya teks di dalamnya juga bisa transparan
+            transition: opacity 1s 0.5s ease-out; // Fade-in setelah container muncul
+            transition-delay: 0.5s; // Sedikit delay
+       }
+       .digital-letter .reveal-on-scroll.is-visible #handwriting-text {
+           opacity: 1; // Tampilkan teks
+       }
     */
+    // JIKA ANDA MENGGUNAKAN Typed.js, uncomment/gunakan kode Typed.js Anda DI DALAM observerCallback
+    // ketika entry.target adalah elemen surat DAN entry.isIntersecting true.
+
+    // -------------------------------------------------------------
+    // Kode untuk Partikel (Misal: tsParticles) - DIKOMENTARI DULU
+    // -------------------------------------------------------------
     /*
     if (typeof tsParticles !== 'undefined') {
         tsParticles.load("particle-container", {
-            fpsLimit: 60,
-            particles: {
-                number: { value: 50, density: { enable: true, value_area: 800 } }, // Jumlah partikel
-                color: { value: "#f0a5a5" }, // Warna partikel (pink lembut)
-                shape: { type: "circle" },
-                opacity: {
-                    value: { min: 0.1, max: 0.5 }, // Opacity acak
-                    anim: { enable: true, speed: 1, sync: false }
-                },
-                size: {
-                    value: { min: 1, max: 3 }, // Ukuran acak
-                },
-                move: {
-                    enable: true,
-                    speed: 0.5, // Kecepatan gerak lambat
-                    direction: "none", // Arah acak
-                    random: true,
-                    straight: false,
-                    outModes: { // Apa yg terjadi di tepi
-                        default: "out"
-                    },
-                    attract: { enable: false },
-                    drift: 2 // Sedikit efek mengambang/melayang
-                },
+            // ... konfigurasi partikel Anda ...
+             particles: {
+                 number: { value: 30, density: { enable: true, value_area: 800 } }, // Kurangi jumlah jika berat
+                 color: { value: "#f0a5a5" },
+                 // ... (sisa konfigurasi)
             },
-            interactivity: {
-                 detectsOn: "canvas",
-                 events: {
-                     onHover: { enable: false }, // Tidak interaktif saat hover
-                     onClick: { enable: false }, // Tidak interaktif saat klik
-                     resize: true,
-                 },
-             },
-             detectRetina: true,
-             background: {
-                 color: "transparent", // Pastikan background container transparan
-             }
+             // ... (sisa konfigurasi)
+        }).then(container => {
+            console.log("tsParticles loaded");
+        }).catch(error => {
+            console.error("tsParticles loading error:", error);
         });
     } else {
-        console.warn("tsParticles tidak ditemukan. Tidak ada animasi partikel.");
+        console.log("tsParticles library not found. Skipping particle effects.");
     }
     */
+
+    // -------------------------------------------------------------
+     console.log("For Angel Website Script Loaded Successfully.");
+    // -------------------------------------------------------------
 
 }); // Akhir dari DOMContentLoaded
