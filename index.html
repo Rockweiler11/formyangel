@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Angel</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Tambahkan link ke Google Fonts jika diinginkan, contoh: -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Lato:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Latar belakang dan Partikel Mengambang (akan di-style di CSS) -->
+    <div class="background-overlay"></div>
+    <div id="particle-container"></div>
+
+    <!-- Kontrol Musik -->
+    <audio id="background-music" loop>
+        <source src="assets/audio/nothing_bruno_major.mp3" type="audio/mpeg">
+        Browser Anda tidak mendukung elemen audio.
+    </audio>
+    <button id="play-pause-btn" class="music-control">
+        <svg viewBox="0 0 60 60"> <!-- Simple Play Icon -->
+             <polygon points="0,0 0,60 60,30" />
+        </svg>
+        <!-- SVG Pause Icon akan ditukar via JS -->
+        <!-- <svg viewBox="0 0 60 60">
+             <rect x="0" y="0" width="15" height="60"/>
+             <rect x="25" y="0" width="15" height="60"/>
+        </svg> -->
+    </button>
+
+    <!-- Header dan Navigasi Dropdown -->
+    <header>
+        <nav>
+            <ul class="menu">
+                <li><a href="#home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#about">About Angel ▾</a>
+                    <!-- Submenu bisa ditambahkan jika diperlukan, atau cukup link langsung -->
+                </li>
+                <li><a href="#messages">Messages</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Konten Utama -->
+    <main>
+        <!-- Bagian Home (Layar Penuh Awal) -->
+        <section id="home" class="fullscreen-section">
+            <div class="content-center fade-in-element">
+                <h1 class="main-title glowing-underline">For Angel,</h1>
+                <p class="subtitle">Because You Deserve This.</p>
+            </div>
+        </section>
+
+        <!-- Bagian About Angel (Dengan Parallax) -->
+        <section id="about" class="content-section parallax-section">
+            <h2 class="section-title reveal-on-scroll">Tentang Dirimu</h2>
+            <div class="parallax-content">
+                <p class="reveal-on-scroll">Ada seseorang yang istimewa, dengan hati yang begitu baik dan penuh kasih sayang. Sosokmu membawa kehangatan, layaknya seorang ibu yang selalu menjaga...</p>
+                <p class="reveal-on-scroll">Kamu selalu peduli, memastikan aku nyaman, merasa aman dan baik-baik saja. Perhatianmu tak terbatas ruang dan waktu.</p>
+                <p class="reveal-on-scroll">Saat ini, jarak memisahkan kita, dengan dirimu yang berada jauh di Papua. Namun, perhatian dan kepedulianmu tetap terasa begitu dekat, seolah kamu ada di sampingku.</p>
+                <p class="reveal-on-scroll">Tahun depan... akan menjadi momen yang sangat kunantikan. Pertama kalinya kita akan bertemu langsung, setelah sekian lama hanya berbagi cerita dan tawa dari kejauhan.</p>
+                <p class="reveal-on-scroll">Terima kasih telah selalu mendukungku, memastikan aku selalu baik-baik saja. Bahkan saat kau harus sedikit 'memarahiku' karena kecerobohanku, itu kulakukan demi kebaikanku.</p>
+                <p class="reveal-on-scroll">Dan yang paling menyentuh hati adalah kedewasaanmu. Bahkan ketika kau benar dalam perdebatan kita, kau tetap berbesar hati meminta maaf terlebih dahulu. Itu menunjukkan betapa tulusnya dirimu menjaga hubungan ini.</p>
+                 <!-- Tambahkan lebih banyak paragraf atau elemen sesuai kebutuhan -->
+            </div>
+        </section>
+
+        <!-- Bagian Messages for Angel -->
+        <section id="messages" class="content-section">
+            <h2 class="section-title reveal-on-scroll">Sebuah Pesan Untukmu</h2>
+            <div class="digital-letter reveal-on-scroll">
+                <p id="handwriting-text">
+                    For my little Angel <3,<br><br>
+                    Mungkin kata-kata takkan pernah cukup untuk mengungkapkan betapa aku menghargai kehadiranmu. Setiap perhatian kecil, setiap dukungan, setiap momen berbagi cerita, semuanya begitu berarti.<br><br>
+                    Kamu mengajarkanku banyak hal tentang ketulusan, kesabaran, dan kedewasaan. Terima kasih telah menjadi cahaya dalam duniaku, bahkan dari kejauhan.<br><br>
+                    Aku tak sabar menantikan hari di mana kita bisa bertemu. Sampai saat itu tiba, jaga dirimu baik-baik di sana.<br><br>
+                    Dengan rasa syukur yang mendalam, Kupersembahkan lagu dan website ini untukmu.<br>
+                    - Lukas
+                </p>
+                <!-- Efek handwriting akan ditambahkan via JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p class="quote reveal-on-scroll">"Beberapa jiwa hanya saling memahami saat bertemu." - N.R. Hart (Adaptasi)</p>
+        <p class="credit">Dibuat dengan ❤️</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <!-- Jika menggunakan library partikel atau handwriting, tambahkan scriptnya di sini -->
+    <!-- Contoh: <script src="path/to/particles.min.js"></script> -->
+    <!-- Contoh: <script src="path/to/typed.min.js"></script> -->
+</body>
+</html>
